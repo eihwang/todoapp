@@ -1,0 +1,96 @@
+import Form from "./components/Form";
+import FilterButton from "./components/FilterButton";
+import Todo from "./components/Todo";
+import {useState} from "react";
+import {nanoid} from 'nanoid';
+import './index.css'
+
+const FILTER_MAP = {
+  All: () => true,
+  Active: (task) => !task.completed, 
+  Completed: (task) => task.completed,
+}
+
+const FILTER_NAMES = Object.keys(FILTER_MAP);
+
+function App(props) {
+  const [tasks, setTasks] = useState(props.tasks); //stores a list of all the tasks
+  const [filter, setFilter] = useState("All");
+
+  const[test, setTest] = useState("t");
+
+  function addTask(name){
+    const newTask = {id: `todo-${nanoid()}`, name, completed:false};
+    setTasks([...tasks,newTask]);
+
+  }
+
+  function toggleTaskCompleted(id){
+    console.log(tasks[0]);
+    const updatedTasks = tasks.map((task)=>{
+      if (id === task.id){
+        return {...task,completed: !task.completed}
+      }
+      return task;
+    });
+    setTasks(updatedTasks);
+  }
+
+  function editTask(id, update){
+    console.log(test)
+    const editTaskList = tasks.map((task)=>{
+      if (id === task.id){
+        return {...task,name: update}
+
+      }
+      return task;
+    });
+    setTasks(editTaskList);
+  }
+  function deleteTask(id){
+    const remaining = tasks.filter((task) => id !== task.id);
+    setTasks(remaining);    
+  }
+  
+  const taskList = tasks.filter(FILTER_MAP[filter])//filters the tasks array based on the filtermap, which takes the the filter name
+    .map((task) => (
+    <Todo
+      id={task.id}
+      name={task.name}
+      completed={task.completed}
+      key={task.id}
+      toggleTaskCompleted = {toggleTaskCompleted}
+      deleteTask = {deleteTask}
+      editTask = {editTask}
+    />
+  ));
+
+  const filterList = FILTER_NAMES.map((name) => (
+    <FilterButton 
+      key = {name}
+      name = {name}
+      isPressed = {name === filter}
+      setFilter = {setFilter}
+    />
+  ));
+
+  return (
+    <div className="todoapp stack-large">
+      <h1>TodoMatic</h1>
+      <Form onSubmit = {addTask} />
+      <div className="filters btn-group stack-exception">
+        {filterList}
+      </div>
+      <h2 id="list-heading">{taskList.length} remaining</h2>
+      <ul
+        role="list"
+        className="todo-list stack-large stack-exception"
+        aria-labelledby="list-heading">
+
+        {taskList}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
